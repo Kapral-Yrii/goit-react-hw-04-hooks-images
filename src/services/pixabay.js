@@ -24,7 +24,7 @@ export class PixabayFetch {
 
     async searchPhoto() {
         axios.defaults.baseURL = this.baseURL
-        let params = `?key=${this.apiKey}&q=${this.searchQuery}&page=${this.searchPage}&per_page=${this.searchPerPage}`
+        const params = `?key=${this.apiKey}&q=${this.searchQuery}&page=${this.searchPage}&per_page=${this.searchPerPage}`
         try {
             const response = await axios.get(params)
             const data = await response.data.hits

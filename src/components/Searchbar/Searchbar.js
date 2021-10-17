@@ -9,3 +9,7 @@ export function Searchbar({ onSubmit }) {
         </header>
     )
 }
+
+Searchbar.propTypes = {
+    onSubmit: PropTypes.func
+}

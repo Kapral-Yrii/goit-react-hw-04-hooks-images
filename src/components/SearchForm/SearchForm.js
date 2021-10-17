@@ -18,3 +18,7 @@ export function SearchForm({ onSubmit }) {
         </form>
     )
 }
+
+SearchForm.propTypes = {
+    onSubmit: PropTypes.func
+}

@@ -9,3 +9,15 @@ export function ImageGallery({ images, openModal }) {
         </ul>
     )
 }
+
+ImageGallery.propTypes = {
+    images: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.number,
+            tags: PropTypes.string,
+            webformatURL: PropTypes.string,
+            largeImageURL: PropTypes.string
+        })
+    ),
+    openModal: PropTypes.func
+}
