@@ -4,9 +4,9 @@ import {ImageGalleryItem} from '../ImageGalleryItem/ImageGalleryItem'
 
 export function ImageGallery({ images, openModal }) {
     return (
-        <ul className={s.imageGallery}>
-            <ImageGalleryItem images={images} openModal={openModal}/>
-        </ul>
+            <ul className={s.imageGallery}>
+                <ImageGalleryItem images={images} openModal={openModal}/>
+            </ul>
     )
 }
 

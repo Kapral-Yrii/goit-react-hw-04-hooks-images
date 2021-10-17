@@ -5,8 +5,12 @@ import { Searchbar } from './components/Searchbar/Searchbar';
 import { ImageGallery } from './components/ImageGallery/ImageGallery';
 import { FetchLoader } from './components/FetchLoader/FetchLoader';
 import { Button } from './components/Button/Button';
+import { Modal } from './components/Modal/Modal';
 
-const fetchImages = new PixabayFetch()
+const baseURL = `https://pixabay.com/api`;
+const apiKey = `23140827-84799927bd5cf84c72c1ef99f`
+
+const fetchImages = new PixabayFetch(baseURL, apiKey)
 
 class App extends Component {
   state = {
@@ -15,13 +19,15 @@ class App extends Component {
     perPage: 12,
     inputValue: '',
     showLoader: false,
+    showModal: false,
+    modalImage: '',
+    modalImageDescription: '',
   }
   componentDidUpdate(prevProps, prevState) {
     if (prevState.inputValue !== this.state.inputValue) {
       fetchImages.searchQuery = this.state.inputValue
       this.showLoader()
       fetchImages.searchPhoto().then(data => {
-        console.log(data);
         this.setState({
           images: [...data]
         })
@@ -46,8 +52,19 @@ class App extends Component {
     }
   }
 
-  openModal = () => {
-    console.log('open modal');
+  openModal = (e) => {
+    this.setState({
+      modalImage: e.target.dataset.url,
+      modalImageDescription: e.target.alt,
+      showModal: !this.state.showModal
+    })
+  }
+  closeModal = (e) => {
+    this.setState({
+      modalImage: '',
+      modalImageDescription: '',
+      showModal: !this.state.showModal
+    })
   }
   onSubmit = (e) => {
     e.preventDefault()
@@ -74,7 +91,12 @@ class App extends Component {
         <Searchbar onSubmit={this.onSubmit}/>
         <ImageGallery images={this.state.images} openModal={this.openModal} />
         <FetchLoader visible={this.state.showLoader} />
-        {this.state.images.length > 0 && (<Button loadMoreImages={this.loadMoreImages}/>)}
+        {this.state.images.length > 0 && (<Button loadMoreImages={this.loadMoreImages} />)}
+        {this.state.showModal === true &&
+          (<Modal
+            image={this.state.modalImage}
+            closeModal={this.closeModal}
+            modalImageDescription={this.state.modalImageDescription} />)}
     </div>
   );
   }

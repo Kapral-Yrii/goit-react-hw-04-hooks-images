@@ -1,9 +1,9 @@
 import axios from "axios"
 
 export class PixabayFetch {
-    constructor() {
-        this.baseURL = `https://pixabay.com/api`;
-        this.apiKey = `23140827-84799927bd5cf84c72c1ef99f`
+    constructor(baseURL, apiKey) {
+        this.baseURL = baseURL;
+        this.apiKey = apiKey;
         this._searchQuery = '';
         this._searchPage = 1;
         this.searchPerPage = 12;
