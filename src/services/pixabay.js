@@ -24,6 +24,7 @@ export class PixabayFetch {
 
     async searchPhoto() {
         axios.defaults.baseURL = this.baseURL
+        this.searchPerPage = window.innerWidth > 1700 ? 15 : 12
         const params = `?key=${this.apiKey}&q=${this.searchQuery}&page=${this.searchPage}&per_page=${this.searchPerPage}`
         try {
             const response = await axios.get(params)

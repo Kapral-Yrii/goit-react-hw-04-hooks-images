@@ -16,39 +16,41 @@ class App extends Component {
   state = {
     images: [],
     page: 1,
-    perPage: 12,
     inputValue: '',
     showLoader: false,
     showModal: false,
     modalImage: '',
     modalImageDescription: '',
   }
+
   componentDidUpdate(prevProps, prevState) {
     if (prevState.inputValue !== this.state.inputValue) {
       fetchImages.searchQuery = this.state.inputValue
-      this.showLoader()
-      fetchImages.searchPhoto().then(data => {
-        this.setState({
-          images: [...data]
-        })
-        return this.showLoader()
-      })
-    }
-
-    if (prevState.page !== this.state.page) {
       fetchImages.searchPage = this.state.page
       this.showLoader()
       fetchImages.searchPhoto().then(data => {
         this.setState({
-          images: [...prevState.images, ...data]
+          images: data
         })
-        return (this.showLoader(),
+        this.showLoader()
+      })
+    }
+
+    if (prevState.page !== this.state.page) {
+      if (this.state.page > 1) {
+        fetchImages.searchPage = this.state.page
+        this.showLoader()
+        fetchImages.searchPhoto().then(data => {
+          this.setState({
+            images: [...prevState.images, ...data]
+          })
+          this.showLoader()
           window.scrollTo({
               top: document.documentElement.scrollHeight,
               behavior: 'smooth',
             })
-        )
-      })
+        })
+      } 
     }
   }
 
@@ -69,7 +71,8 @@ class App extends Component {
   onSubmit = (e) => {
     e.preventDefault()
     this.setState({
-      inputValue: e.target[1].value
+      inputValue: e.target[1].value,
+      page: 1
     })
   }
   loadMoreImages = () => {
