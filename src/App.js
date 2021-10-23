@@ -1,108 +1,102 @@
 import s from './App.module.css';
-import { Component } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PixabayFetch } from './services/pixabay';
 import { Searchbar } from './components/Searchbar/Searchbar';
 import { ImageGallery } from './components/ImageGallery/ImageGallery';
 import { FetchLoader } from './components/FetchLoader/FetchLoader';
 import { Button } from './components/Button/Button';
 import { Modal } from './components/Modal/Modal';
+import { useToggle } from './hooks/useToggle';
 
 const baseURL = `https://pixabay.com/api`;
 const apiKey = `23140827-84799927bd5cf84c72c1ef99f`
 
 const fetchImages = new PixabayFetch(baseURL, apiKey)
 
-class App extends Component {
-  state = {
-    images: [],
-    page: 1,
-    inputValue: '',
-    showLoader: false,
-    showModal: false,
-    modalImage: '',
-    modalImageDescription: '',
-  }
+function App() {
+    const [images, setImages] = useState([])
+    const [page, setPage] = useState(1)
+    const [inputValue, setInputValue] = useState('')
+    const [showLoader, setShowLoader] = useToggle(false)
+    // const showLoader = useRef(false)
+    const [showModal, setShowModal] = useToggle(false)
+    const [modalImage, setModalImage] = useState('')
+    const [modalImageDescription, setModalImageDescription] = useState('')
+    const inputFetch = useRef(false)
+    const loadMoreFetch = useRef(false)
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.inputValue !== this.state.inputValue) {
-      fetchImages.searchQuery = this.state.inputValue
-      fetchImages.searchPage = this.state.page
-      this.showLoader()
-      fetchImages.searchPhoto().then(data => {
-        this.setState({
-          images: data
-        })
-        this.showLoader()
-      })
-    }
+    const openModal = useCallback((e) => {
+        setModalImage(e.target.dataset.url)
+        setModalImageDescription(e.target.alt)
+        setShowModal(!showModal)
+    }, [setModalImage, setModalImageDescription, setShowModal, showModal])
 
-    if (prevState.page !== this.state.page) {
-      if (this.state.page > 1) {
-        fetchImages.searchPage = this.state.page
-        this.showLoader()
-        fetchImages.searchPhoto().then(data => {
-          this.setState({
-            images: [...prevState.images, ...data]
-          })
-          this.showLoader()
-          window.scrollTo({
-              top: document.documentElement.scrollHeight,
-              behavior: 'smooth',
+    const closeModal = useCallback(() => {
+        setModalImage('')
+        setModalImageDescription('')
+        setShowModal(!showModal)
+    }, [setModalImage, setModalImageDescription, setShowModal, showModal])
+
+    const onSubmit = useCallback((e) => {
+        e.preventDefault()
+        setInputValue(e.target[1].value)
+        setPage(1)
+        inputFetch.current = !inputFetch.current
+    }, [])
+
+    const loadMoreImages = useCallback(() => {
+        setPage(prev => prev + 1)
+        loadMoreFetch.current = !loadMoreFetch.current
+    }, [])
+
+    const handleShowLoader = useCallback(() => setShowLoader(!showLoader), [setShowLoader, showLoader])
+    // const handleShowLoader = useCallback(() => showLoader.current = !showLoader.current, [])
+
+    useEffect(() => {
+        if (inputFetch.current) {
+            console.log('fetch input');
+            fetchImages.searchQuery = inputValue
+            fetchImages.searchPage = page
+            handleShowLoader()
+            fetchImages.searchPhoto()
+            .then(data => {
+                setImages(data)
+                inputFetch.current = !inputFetch.current
+                handleShowLoader()
             })
-        })
-      } 
-    }
-  }
+        }
+    }, [handleShowLoader, inputValue, page])
 
-  openModal = (e) => {
-    this.setState({
-      modalImage: e.target.dataset.url,
-      modalImageDescription: e.target.alt,
-      showModal: !this.state.showModal
-    })
-  }
-  closeModal = (e) => {
-    this.setState({
-      modalImage: '',
-      modalImageDescription: '',
-      showModal: !this.state.showModal
-    })
-  }
-  onSubmit = (e) => {
-    e.preventDefault()
-    this.setState({
-      inputValue: e.target[1].value,
-      page: 1
-    })
-  }
-  loadMoreImages = () => {
-    this.setState((prev) => {
-      return ({
-        page: prev.page + 1
-      })
-    })
-  }
-  showLoader() {
-    this.setState({
-        showLoader: !this.state.showLoader
-      })
-  }
+    useEffect(() => {
+        if (loadMoreFetch.current) {
+            console.log('fetch load more');
+            fetchImages.searchPage = page
+            handleShowLoader()
+            fetchImages.searchPhoto().then(data => {
+                setImages(prev => [...prev, ...data])
+                loadMoreFetch.current = !loadMoreFetch.current
+                handleShowLoader()
+                window.scrollTo({
+                    top: document.documentElement.scrollHeight,
+                    behavior: 'smooth',
+                  })
+            }) 
+        }
+    }, [handleShowLoader, page])
 
-  render() {
     return (
     <div className={s.app}>
-        <Searchbar onSubmit={this.onSubmit}/>
-        <ImageGallery images={this.state.images} openModal={this.openModal} />
-        <FetchLoader visible={this.state.showLoader} />
-        {this.state.images.length > 0 && (<Button loadMoreImages={this.loadMoreImages} />)}
-        {this.state.showModal === true &&
+        <Searchbar onSubmit={onSubmit}/>
+        <ImageGallery images={images} openModal={openModal} />
+        <FetchLoader visible={showLoader} />
+        {/* <FetchLoader visible={showLoader.current} /> */}
+        {images.length > 0 && (<Button loadMoreImages={loadMoreImages} />)}
+        {showModal &&
           (<Modal
-            image={this.state.modalImage}
-            closeModal={this.closeModal}
-            modalImageDescription={this.state.modalImageDescription} />)}
+            image={modalImage}
+            closeModal={closeModal}
+            modalImageDescription={modalImageDescription} />)}
     </div>
-  );
-  }
+  )
 }
-
 export default App;
