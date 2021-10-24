@@ -18,7 +18,6 @@ function App() {
     const [page, setPage] = useState(1)
     const [inputValue, setInputValue] = useState('')
     const [showLoader, setShowLoader] = useToggle(false)
-    // const showLoader = useRef(false)
     const [showModal, setShowModal] = useToggle(false)
     const [modalImage, setModalImage] = useState('')
     const [modalImageDescription, setModalImageDescription] = useState('')
@@ -49,12 +48,12 @@ function App() {
         loadMoreFetch.current = !loadMoreFetch.current
     }, [])
 
-    const handleShowLoader = useCallback(() => setShowLoader(!showLoader), [setShowLoader, showLoader])
-    // const handleShowLoader = useCallback(() => showLoader.current = !showLoader.current, [])
+   
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const handleShowLoader = useCallback(() => setShowLoader(!showLoader), [])
 
     useEffect(() => {
         if (inputFetch.current) {
-            console.log('fetch input');
             fetchImages.searchQuery = inputValue
             fetchImages.searchPage = page
             handleShowLoader()
@@ -69,7 +68,6 @@ function App() {
 
     useEffect(() => {
         if (loadMoreFetch.current) {
-            console.log('fetch load more');
             fetchImages.searchPage = page
             handleShowLoader()
             fetchImages.searchPhoto().then(data => {
@@ -89,7 +87,6 @@ function App() {
         <Searchbar onSubmit={onSubmit}/>
         <ImageGallery images={images} openModal={openModal} />
         <FetchLoader visible={showLoader} />
-        {/* <FetchLoader visible={showLoader.current} /> */}
         {images.length > 0 && (<Button loadMoreImages={loadMoreImages} />)}
         {showModal &&
           (<Modal
